@@ -4,12 +4,13 @@ const PORT = 8080;
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true}));
 
-function generateRandomString() {};
-
+const generateRandomString = () => {
+  return Math.random().toString(36).slice(2, 8)
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "9sm5xK": "http://www.google.com",
 };
 
 
@@ -20,8 +21,15 @@ app.get("/hello", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the post request body to the console
-  res.send("ok"); // Server responds with ok
-})
+  const shortID = generateRandomString();
+  urlDatabase[shortID] = req.body.longURL ;
+  res.redirect(`/urls/${shortID}`);
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id]
+  res.redirect(longURL);
+});
 
 
 app.get("/urls/new", (req, res) => {
