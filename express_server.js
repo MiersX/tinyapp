@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; 
-
 app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true}));
+
+function generateRandomString() {};
 
 
 const urlDatabase = {
@@ -15,6 +17,17 @@ const urlDatabase = {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n")
 })
+
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the post request body to the console
+  res.send("ok"); // Server responds with ok
+})
+
+
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
