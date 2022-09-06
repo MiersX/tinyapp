@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; 
+const morgan = require("morgan");
+app.use(morgan("dev"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true}));
 
