@@ -54,6 +54,7 @@ app.post("/urls/:shortID", (req, res) => {
   res.redirect("/urls");
 });
  
+// Takes in form-data from the login field, creates a cookie with the username value, redirects back to url
 
 app.post("/login", (req, res) => {
   //console.log(req.body.username);
@@ -63,6 +64,12 @@ app.post("/login", (req, res) => {
 
 });
 
+// Clears the username cookie and redirects back to the urls page
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id]
