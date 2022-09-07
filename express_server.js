@@ -21,6 +21,10 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n")
 })
 
+
+// Creates a new short url id, and adds the shortID:LongURL pair to our urlDatabase object
+// Redirects to the shortened url
+
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the post request body to the console
   const shortID = generateRandomString();
@@ -28,10 +32,22 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortID}`);
 });
 
+// Deletes the key from the database object, redirects back to url page
+
+app.post(`/urls/:shortID/delete`, (req, res) => {
+  const shortID = req.params.shortID;
+  delete urlDatabase[shortID];
+  res.redirect("/urls");
+})
+
+
+
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id]
   res.redirect(longURL);
 });
+
+
 
 
 app.get("/urls/new", (req, res) => {
@@ -39,25 +55,31 @@ app.get("/urls/new", (req, res) => {
 });
 
 
+
+
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
+
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]}
   res.render("urls_show", templateVars);
 });
 
+
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
-
 
 
 
