@@ -28,6 +28,9 @@ app.get("/hello", (req, res) => {
 })
 
 
+// ** Make sure to update the templateVars with what you need to pass to _register and other templates
+
+
 
 // Creates a new short url id randomly, and adds the shortID:LongURL pair to our urlDatabase object
 // Redirects to the shortened url
@@ -84,7 +87,13 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-
+app.get("/urls/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"],
+    
+  };
+  res.render("urls_register", templateVars);
+});
 
 
 app.get("/urls", (req, res) => {
