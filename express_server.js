@@ -26,19 +26,30 @@ app.get("/hello", (req, res) => {
 // Redirects to the shortened url
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the post request body to the console
+  //console.log(req.body); // Log the post request body to the console
   const shortID = generateRandomString();
-  urlDatabase[shortID] = req.body.longURL ;
+  urlDatabase[shortID] = req.body.longURL,
   res.redirect(`/urls/${shortID}`);
 });
 
 // Deletes the key from the database object, redirects back to url page
 
-app.post(`/urls/:shortID/delete`, (req, res) => {
+app.post("/urls/:shortID/delete", (req, res) => {
   const shortID = req.params.shortID;
   delete urlDatabase[shortID];
   res.redirect("/urls");
-})
+});
+
+
+
+app.post("/urls/:shortID", (req, res) => {
+  const shortID = req.params.shortID
+  urlDatabase[shortID] = req.body.name;
+  console.log("urlDatabase", urlDatabase);
+  res.redirect("/urls");
+});
+ 
+
 
 
 
