@@ -16,10 +16,30 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(2, 8)
 };
 
+// database object of stored short URLS : Long URLS
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
+
+// database object of users
+
+const users = {
+
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
+
 
 
 
@@ -87,10 +107,12 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+
+// Route for the /register endpoint. Renders our urls_register page
+
 app.get("/urls/register", (req, res) => {
   const templateVars = {
     username: req.cookies["username"],
-    
   };
   res.render("urls_register", templateVars);
 });
