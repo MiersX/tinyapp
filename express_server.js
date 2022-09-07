@@ -28,7 +28,8 @@ app.get("/hello", (req, res) => {
 })
 
 
-// Creates a new short url id, and adds the shortID:LongURL pair to our urlDatabase object
+
+// Creates a new short url id randomly, and adds the shortID:LongURL pair to our urlDatabase object
 // Redirects to the shortened url
 
 app.post("/urls", (req, res) => {
@@ -46,17 +47,21 @@ app.post("/urls/:shortID/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-
-
 app.post("/urls/:shortID", (req, res) => {
   const shortID = req.params.shortID
   urlDatabase[shortID] = req.body.name;
-  console.log("urlDatabase", urlDatabase);
+  //console.log("urlDatabase", urlDatabase);
   res.redirect("/urls");
 });
  
 
+app.post("/login", (req, res) => {
+  //console.log(req.body.username);
+  const loginVal = req.body.username;
+  res.cookie("username", loginVal);
+  res.redirect("/urls");
 
+});
 
 
 app.get("/u/:id", (req, res) => {
