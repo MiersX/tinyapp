@@ -1,3 +1,5 @@
+// ** ------------ Requirements and Middleware ----------- ** //
+
 const express = require("express");
 
 const app = express();
@@ -25,14 +27,18 @@ const userEmailLookup = (email) => {
   return null;
 }
 
-// database object of stored short URLS : Long URLS
+
+// ** ---------- Databases---------- ** //
+
+
+// Database of stored short URLS : Long URLS
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
-// database object of users
+// Database of users
 
 const users = {
 
@@ -48,12 +54,14 @@ const users = {
   },
 };
 
+// ** ------- Routes and Endpoints ------- ** //
 
-// Create new user for the users database object. Uses email and password from the register template form. 
-// Adds it to the stored database users ** the objects outer "id" is the same as the value held at the id key inside.
+
+// Create new user for the users database, using data passed from register template form. 
+// Matches users external id as their internal id key.
+// Sets a cookie "user_id" to their id value.
 
 app.post("/register", (req, res) => {
-   //console.log(req.body)... ex. { email: "name@google.com", password: "dffa" }
   const randomID = generateRandomString();
    if (!req.body.email || !req.body.password) {
       res.status(400).send("Uh-oh! An empty email or password field was detected, please try again.");
@@ -69,16 +77,15 @@ app.post("/register", (req, res) => {
   } else {
     res.status(400).send("Uh-oh! That email is already registered with us, please try again.");
     return;
-    }
+  }
   res.cookie("user_id", randomID);
   res.redirect("/urls");
 });
 
 
 
-
-// Creates a new short url id randomly, and adds the shortID:LongURL pair to our urlDatabase object
-// Redirects to the shortened url
+// Generates random short URL ("ID"), and adds the shortID:LongURL pair to our urlDatabase.
+// Redirects to the shortened url.
 
 app.post("/urls", (req, res) => {
   //console.log(req.body); // Log the post request body to the console
@@ -88,9 +95,7 @@ app.post("/urls", (req, res) => {
 });
 
 
-
-
-// Deletes the key from the database object, redirects back to url page
+// Deletes the requested keyed object from the URL database, redirects back to url page.
 
 app.post("/urls/:shortID/delete", (req, res) => {
   const shortID = req.params.shortID;
@@ -103,13 +108,14 @@ app.post("/urls/:shortID/delete", (req, res) => {
 app.post("/urls/:shortID", (req, res) => {
   const shortID = req.params.shortID
   urlDatabase[shortID] = req.body.name;
-  //console.log("urlDatabase", urlDatabase);
   res.redirect("/urls");
 });
  
 
 
-// Login post-request. Uses the email provided to search through our users database. 
+// Handles login post-request. Uses the email provided to search through our users database.
+// If no user found, or passwords do not match, error handle.
+// If both match - resets the users specific cookie, redirects to /urls
 
 app.post("/login", (req, res) => {
   const userObj = userEmailLookup(req.body.email);
@@ -129,26 +135,45 @@ app.post("/login", (req, res) => {
 });
 
 
-
-// Clears the user_id cookie and redirects back to the urls page
+// Clears the user_id cookie when the logout button is submitted.
+// Redirects back to the urls page
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
+
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id]
   res.redirect(longURL);
 });
 
-// route to render the urls_login file
+
+// Route to handle the get /login request and render the urls_login template.
+// If user is logged-in already, redirects to /urls.
 
 app.get("/login", (req, res) => {
   const cookieID = req.cookies["user_id"];
-  // Could pass templateVars into the /login page
   const templateVars = {user: users[cookieID],}
+    if (cookieID) {
+    res.redirect("/urls");
+  } else {
   res.render("urls_login", templateVars);
+  };
+});
+
+// Route for the /register endpoint. Renders our urls_register page
+// If a user is currently logged-in, redirects to /urls.
+
+app.get("/register", (req, res) => {
+  const cookieID = req.cookies["user_id"];
+  const templateVars = {user: users[cookieID],};
+    if (cookieID) {
+      res.redirect("/urls")
+    } else {
+  res.render("urls_register", templateVars);
+    };
 });
 
 
@@ -159,16 +184,6 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-
-// Route for the /register endpoint. Renders our urls_register page
-
-app.get("/register", (req, res) => {
-  const cookieID = req.cookies["user_id"];
-  const templateVars = {
-    user: users[cookieID],
-  };
-  res.render("urls_register", templateVars);
-});
 
 
 app.get("/urls", (req, res) => {
@@ -194,6 +209,8 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+
+// ** ------------Listener ------------- ** //
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
