@@ -109,25 +109,30 @@ app.post("/urls/:shortID", (req, res) => {
  
 
 
+// Login post-request. Uses the email provided to search through our users database. 
 
-// Takes in form-data from the login field, creates a cookie with the username value, redirects back to url
-
-// ** Do Something with this login request form thing, as it's not currently relevant with the register account cookie
-/*
 app.post("/login", (req, res) => {
-  //console.log(req.body.username);
-  const loginVal = req.body.username;
-  res.cookie("username", loginVal);
-  res.redirect("/urls");
+  const userObj = userEmailLookup(req.body.email);
 
+  if (!userObj) {
+    res.status(403).send("Email or password is incorrect.");
+    return;
+  }
+  if ((userObj) && (req.body.password !== userObj.password)) {
+    res.status(403).send("Email or password is incorrect.");
+    return;
+  } 
+  if ((userObj)  && (req.body.password === userObj.password)) {
+    res.cookie("user_id", userObj.id);
+    res.redirect("/urls");
+  }
 });
-*/
+
 
 
 // Clears the username cookie and redirects back to the urls page
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
@@ -184,19 +189,14 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-
-
+/*
 app.get("/", (req, res) => {
   const cookieID = req.cookies["user_id"];
   user: users[cookieID]
   // console.log(users[cookieID]) object specific to the created user
   res.send("Hello!");
 });
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n")
-})
-
+*/
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
