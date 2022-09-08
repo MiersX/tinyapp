@@ -16,13 +16,6 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(2, 8)
 };
 
-// ** Make sure to update the templateVars with what you need to pass to _register and other templates
-
-
-
-
-
-
 
 // database object of stored short URLS : Long URLS
 
@@ -50,7 +43,6 @@ const users = {
 
 // Create new user for the users database object. Uses email and password from the register template form. 
 // Adds it to the stored database users ** the objects outer "id" is the same as the value held at the id key inside.
-// Sets a "user_id cookie" holding the users randomly generated id
 
 app.post("/register", (req, res) => {
    //console.log(req.body)... ex. { email: "name@google.com", password: "dffa" }
@@ -59,12 +51,14 @@ app.post("/register", (req, res) => {
     id: randomID,
     email: req.body.email,
     password: req.body.password,
-   };
-  users[randomID] = newUser;
+   }
+   users[randomID] = newUser;
   res.cookie("user_id", randomID);
-  //console.log(users);
-  res.redirect('/urls');
+  res.redirect("/urls");
 });
+
+
+
 
 // Creates a new short url id randomly, and adds the shortID:LongURL pair to our urlDatabase object
 // Redirects to the shortened url
@@ -76,6 +70,9 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortID}`);
 });
 
+
+
+
 // Deletes the key from the database object, redirects back to url page
 
 app.post("/urls/:shortID/delete", (req, res) => {
@@ -84,6 +81,8 @@ app.post("/urls/:shortID/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+
+
 app.post("/urls/:shortID", (req, res) => {
   const shortID = req.params.shortID
   urlDatabase[shortID] = req.body.name;
@@ -91,8 +90,13 @@ app.post("/urls/:shortID", (req, res) => {
   res.redirect("/urls");
 });
  
+
+
+
 // Takes in form-data from the login field, creates a cookie with the username value, redirects back to url
 
+// ** Do Something with this login request form thing, as it's not currently relevant with the register account cookie
+/*
 app.post("/login", (req, res) => {
   //console.log(req.body.username);
   const loginVal = req.body.username;
@@ -100,10 +104,13 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 
 });
+*/
+
 
 // Clears the username cookie and redirects back to the urls page
 
 app.post("/logout", (req, res) => {
+  res.clearCookie("username");
   res.clearCookie("user_id");
   res.redirect("/urls");
 });
@@ -117,7 +124,8 @@ app.get("/u/:id", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {username: req.cookies["username"],}
+  const cookieID = req.cookies["user_id"];
+  const templateVars = {user: users[cookieID],}
   res.render("urls_new", templateVars);
 });
 
@@ -125,16 +133,18 @@ app.get("/urls/new", (req, res) => {
 // Route for the /register endpoint. Renders our urls_register page
 
 app.get("/urls/register", (req, res) => {
+  const cookieID = req.cookies["user_id"];
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[cookieID],
   };
   res.render("urls_register", templateVars);
 });
 
 
 app.get("/urls", (req, res) => {
+  const cookieID = req.cookies["user_id"];
   const templateVars = { 
-    username: req.cookies["username"],
+    user: users[cookieID],
     urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
@@ -142,8 +152,9 @@ app.get("/urls", (req, res) => {
 
 
 app.get("/urls/:id", (req, res) => {
+  const cookieID = req.cookies["user_id"];
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[cookieID],
     id: req.params.id, longURL: urlDatabase[req.params.id]}
   res.render("urls_show", templateVars);
 });
@@ -151,6 +162,9 @@ app.get("/urls/:id", (req, res) => {
 
 
 app.get("/", (req, res) => {
+  const cookieID = req.cookies["user_id"];
+  user: users[cookieID]
+  // console.log(users[cookieID]) object specific to the created user
   res.send("Hello!");
 });
 
