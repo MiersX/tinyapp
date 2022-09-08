@@ -137,6 +137,14 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+// route to render the urls_login file
+
+app.get("/login", (req, res) => {
+  const cookieID = req.cookies["user_id"];
+  // Could pass templateVars into the /login page
+  const templateVars = {user: users[cookieID],}
+  res.render("urls_login", templateVars);
+});
 
 
 
@@ -149,7 +157,7 @@ app.get("/urls/new", (req, res) => {
 
 // Route for the /register endpoint. Renders our urls_register page
 
-app.get("/urls/register", (req, res) => {
+app.get("/register", (req, res) => {
   const cookieID = req.cookies["user_id"];
   const templateVars = {
     user: users[cookieID],
