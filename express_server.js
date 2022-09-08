@@ -14,6 +14,21 @@ app.use(express.urlencoded({ extended: true}));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+/*
+const cookieSession = require('cookie-session');
+app.use(cookieSession({
+  name: 'session',
+  keys: [ //secret keys ],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
+*/
+
+const bcrypt = require("bcryptjs");
+// const hashPassword = bcrypt.hashSync(password, 8) -> to hash pass
+// bcrypt.compareSync(password, user.password) -> comparison matching purposes
+
 const generateRandomString = () => {
   return Math.random().toString(36).slice(2, 8)
 };
@@ -88,10 +103,14 @@ app.post("/register", (req, res) => {
 // Redirects to the shortened url.
 
 app.post("/urls", (req, res) => {
-  //console.log(req.body); // Log the post request body to the console
+  const cookieID = req.cookies["user_id"];
   const shortID = generateRandomString();
-  urlDatabase[shortID] = req.body.longURL,
-  res.redirect(`/urls/${shortID}`);
+    if (cookieID) {
+     urlDatabase[shortID] = req.body.longURL,
+     res.redirect(`/urls/${shortID}`);
+  } else {
+      res.status(403).send("Only registered users are able to access the shorten URL feature!");
+  }
 });
 
 
@@ -141,12 +160,19 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/urls");
+  //req.session = null; removes cookies?
 });
 
 
+// Accesses the short url key in our database, and redirects them to the source website.
+
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id]
+  const longURL = urlDatabase[req.params.id];
+  if (longURL) {
   res.redirect(longURL);
+  } else {
+    res.status(400).send("This short URL doesn't exist yet...Create it with our tool!")
+  }
 });
 
 
@@ -172,17 +198,23 @@ app.get("/register", (req, res) => {
     if (cookieID) {
       res.redirect("/urls")
     } else {
-  res.render("urls_register", templateVars);
+      res.render("urls_register", templateVars);
     };
 });
 
 
+// Handles the get request for the urls/new endpoint.
+// If user is not logged in, redirects to login page.
 
 app.get("/urls/new", (req, res) => {
   const cookieID = req.cookies["user_id"];
   const templateVars = {user: users[cookieID],}
-  res.render("urls_new", templateVars);
-});
+    if (cookieID) {
+      res.render("urls_new", templateVars);
+    } else {
+      res.redirect("/login");
+    }
+  });
 
 
 
@@ -208,6 +240,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
 
 
 // ** ------------Listener ------------- ** //
