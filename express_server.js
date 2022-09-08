@@ -16,6 +16,14 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(2, 8)
 };
 
+// ** Make sure to update the templateVars with what you need to pass to _register and other templates
+
+
+
+
+
+
+
 // database object of stored short URLS : Long URLS
 
 const urlDatabase = {
@@ -40,17 +48,23 @@ const users = {
 };
 
 
+// Create new user for the users database object. Uses email and password from the register template form. 
+// Adds it to the stored database users ** the objects outer "id" is the same as the value held at the id key inside.
+// Sets a "user_id cookie" holding the users randomly generated id
 
-
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n")
-})
-
-
-// ** Make sure to update the templateVars with what you need to pass to _register and other templates
-
-
+app.post("/register", (req, res) => {
+   //console.log(req.body)... ex. { email: "name@google.com", password: "dffa" }
+   const randomID = generateRandomString();
+   const newUser = {
+    id: randomID,
+    email: req.body.email,
+    password: req.body.password,
+   };
+  users[randomID] = newUser;
+  res.cookie("user_id", randomID);
+  //console.log(users);
+  res.redirect('/urls');
+});
 
 // Creates a new short url id randomly, and adds the shortID:LongURL pair to our urlDatabase object
 // Redirects to the shortened url
@@ -90,7 +104,7 @@ app.post("/login", (req, res) => {
 // Clears the username cookie and redirects back to the urls page
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -140,6 +154,9 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n")
+})
 
 
 app.get("/urls.json", (req, res) => {
