@@ -16,9 +16,14 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(2, 8)
 };
 
-const userLookup = (email) => {
-
-};
+const userEmailLookup = (email) => {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  return null;
+}
 
 // database object of stored short URLS : Long URLS
 
@@ -49,16 +54,22 @@ const users = {
 
 app.post("/register", (req, res) => {
    //console.log(req.body)... ex. { email: "name@google.com", password: "dffa" }
-   const randomID = generateRandomString();
+  const randomID = generateRandomString();
    if (!req.body.email || !req.body.password) {
-        res.status(400).send("Uh-oh! An empty email or password field was detected, please try again.");
+      res.status(400).send("Uh-oh! An empty email or password field was detected, please try again.");
+      return;
    }
+  if (!userEmailLookup(req.body.email)) {
    const newUser = {
     id: randomID,
     email: req.body.email,
     password: req.body.password,
    }
    users[randomID] = newUser;
+  } else {
+    res.status(400).send("Uh-oh! That email is already registered with us, please try again.");
+    return;
+    }
   res.cookie("user_id", randomID);
   res.redirect("/urls");
 });
