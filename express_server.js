@@ -130,7 +130,7 @@ app.post("/login", (req, res) => {
 
 
 
-// Clears the username cookie and redirects back to the urls page
+// Clears the user_id cookie and redirects back to the urls page
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
@@ -189,21 +189,10 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-/*
-app.get("/", (req, res) => {
-  const cookieID = req.cookies["user_id"];
-  user: users[cookieID]
-  // console.log(users[cookieID]) object specific to the created user
-  res.send("Hello!");
-});
-*/
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-
-
-
 
 
 app.listen(PORT, () => {
