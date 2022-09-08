@@ -16,6 +16,9 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(2, 8)
 };
 
+const userLookup = (email) => {
+
+};
 
 // database object of stored short URLS : Long URLS
 
@@ -47,6 +50,9 @@ const users = {
 app.post("/register", (req, res) => {
    //console.log(req.body)... ex. { email: "name@google.com", password: "dffa" }
    const randomID = generateRandomString();
+   if (!req.body.email || !req.body.password) {
+        res.status(400).send("Uh-oh! An empty email or password field was detected, please try again.");
+   }
    const newUser = {
     id: randomID,
     email: req.body.email,
