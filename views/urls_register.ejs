@@ -10,22 +10,22 @@
   integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
   crossorigin="anonymous"
 />
-  <title>Register a new account!</title>
+  <title>Create a new account!</title>
 </head>
 
 <body>
   <%- include('partials/_header') %>
   <main style="margin: 1em;">
-  <h3>Register a new account!</h3>
+  <h3><b>Create a new account!</b></h3>
   <form method="POST" action="/register">
     <div class="mb-3">
       <label for="email" class="form-label"><b>Email address:</b></label>
-      <input type="email" name="email" class="form-control" id="emailinput" aria-describedby="emailHelp">
+      <input type="email" placeholder="Enter email" name="email" class="form-control" id="emailinput" aria-describedby="emailHelp">
       <div id="emailHelp" class="form-text">Your secrets are safe with us.</div>
     </div>
     <div class="mb-3">
       <label for="password" class="form-label"><b>Password:</b></label>
-      <input type="password" name="password" class="form-control" id="passwordinput">
+      <input type="password" placeholder="Password" name="password" class="form-control" id="passwordinput">
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
