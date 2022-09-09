@@ -13,18 +13,20 @@
 
   <body>
     <%- include('partials/_header') %>
+    <% if(user && urls[shortID]){ %>
+
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+        <h5 class="card-title">TinyURL for: <%= longID %></h5>
         <p class="card-text">
-          Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
+          Short URL ID: <a href="/u/<%= shortID %>"><%= shortID %></a>
         </p>
       </div>
       <div class="card-footer text-muted">
-        <h5>Edit</h5>
+        <h5><b>Edit</b></h5>
           <div class="form_container">
-            <form method="POST" action="/urls/<%= id %>">
+            <form method="POST" action="/urls/<%= shortID %>">
               <label for="name">New URL:</label>
               <input  type="text" name="name" id="name" placeholder="..."/>
               <button name="submit" type="submit" class="btn btn-primary">Submit</button>
@@ -32,6 +34,14 @@
           </div>
         </div>
     </div>
+    <% } else{ %>
+      <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading">Apologies!</h4>
+        <p>The TinyURL access, creation, and editing tools are account-locked & only available for members. Want to <a href="/register" class="alert-link">register</a>?</p>
+        <hr>
+        <p class="mb-0">Already a member? <a href="/login" class="alert-link">Login</a> here.</p>
+      </div>
+      <% } %>
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

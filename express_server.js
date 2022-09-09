@@ -42,6 +42,20 @@ const userEmailLookup = (email) => {
   return null;
 }
 
+const urlsForUser = (id) => {
+  const ownedURLS = {};
+
+    for (const obj in urlDatabase) {
+      if (urlDatabase[obj].userID === id) {
+        ownedURLS[obj] = {
+          longURL: urlDatabase[obj].longURL,
+          userID: id,
+        }    
+      }
+    }
+  return ownedURLS;
+}
+  
 
 // ** ---------- Databases---------- ** //
 
@@ -49,6 +63,7 @@ const userEmailLookup = (email) => {
 // Database of stored short URLS : Long URLS
 
 const urlDatabase = {
+  /*
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
     userID: "aJ48lW"
@@ -56,7 +71,7 @@ const urlDatabase = {
   "9sm5xK": {
     longURL: "http://www.google.com",
     userID: "aJ48lW"
-  },
+  },*/
 };
 
 // Database of users
@@ -108,31 +123,65 @@ app.post("/register", (req, res) => {
 // Generates random short URL ("ID"), and adds the shortID:LongURL pair to our urlDatabase.
 // Redirects to the shortened url.
 
+// ** //
 app.post("/urls", (req, res) => {
   const cookieID = req.cookies["user_id"];
   const shortID = generateRandomString();
     if (cookieID) {
-     urlDatabase[shortID] = req.body.longURL,
-     res.redirect(`/urls/${shortID}`);
+     urlDatabase[shortID] = { 
+      longURL: req.body.longURL,
+      userID: cookieID,
+    };
+    console.log(urlDatabase);
+    res.redirect(`/urls/${shortID}`);
   } else {
       res.status(403).send("Only registered users are able to access the shorten URL feature!");
   }
 });
 
 
-// Deletes the requested keyed object from the URL database, redirects back to url page.
+// Deletes the requested keyed object from the URL database if user meets conditions, redirects back to url page.
 
 app.post("/urls/:shortID/delete", (req, res) => {
+  const cookieID = req.cookies["user_id"];
   const shortID = req.params.shortID;
+    if (cookieID !== urlDatabase[shortID].userID) {
+      res.status(403).send("You're not the owner of this URL");
+      return;
+    }
+    if (!cookieID) {
+      res.status(403).send("You need to be logged-in to access this");
+      return;
+    }
+    if (!shortID) {
+      res.status(404).send("This id wasn't found");
+      return;
+    }
   delete urlDatabase[shortID];
   res.redirect("/urls");
 });
 
-
+// Edits the longURL value held in the urlDatabase if user meets conditions 
 
 app.post("/urls/:shortID", (req, res) => {
+  const cookieID = req.cookies["user_id"];
   const shortID = req.params.shortID
-  urlDatabase[shortID] = req.body.name;
+    if (cookieID !== urlDatabase[shortID].userID) {
+      res.status(403).send("You're not the owner of this URL");
+      return;
+    }
+    if (!cookieID) {
+      res.status(403).send("You need to be logged-in to access this");
+      return;
+    }
+    if (!shortID) {
+      res.status(404).send("This id wasn't found");
+      return;
+    }
+    urlDatabase[shortID] = {
+      longURL: req.body.name,
+      userID: cookieID,
+    };
   res.redirect("/urls");
 });
  
@@ -173,7 +222,7 @@ app.post("/logout", (req, res) => {
 // Accesses the short url key in our database, and redirects them to the source website.
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   if (longURL) {
   res.redirect(longURL);
   } else {
@@ -226,19 +275,32 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const cookieID = req.cookies["user_id"];
+  const userURLS = urlsForUser(cookieID);
   const templateVars = { 
     user: users[cookieID],
-    urls: urlDatabase };
+    urls: userURLS };
   res.render("urls_index", templateVars);
 });
 
 
 
 app.get("/urls/:id", (req, res) => {
+
   const cookieID = req.cookies["user_id"];
+  const userURLS = urlsForUser(cookieID);
+  const shortID = req.params.id;
+  const longID = urlDatabase[req.params.id].longURL
+
   const templateVars = {
     user: users[cookieID],
-    id: req.params.id, longURL: urlDatabase[req.params.id]}
+    urls: userURLS,
+    shortID,
+    longID,
+  };
+   if (!urlDatabase[shortID]) {
+    res.status(404).send("Sorry, this TinyURL hasn't been created yet!")
+    return;
+  }
   res.render("urls_show", templateVars);
 });
 
@@ -254,3 +316,11 @@ app.get("/urls.json", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+
+
+/*
+ id: req.params.id, 
+    longURL: urlDatabase[req.params.id].longURL}
+    */
