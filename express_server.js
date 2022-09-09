@@ -1,7 +1,6 @@
 // ** ------------ Requirements and Middleware ----------- ** //
 
 const express = require("express");
-
 const app = express();
 const PORT = 8080; 
 
@@ -14,41 +13,17 @@ app.use(express.urlencoded({ extended: true}));
 const cookieSession = require('cookie-session');
 app.use(cookieSession({
   name: 'session',
-  secret: '7H1515453CR3T5TR1NG',
+  secret: '7H1515453CR3757R1NG',
 }));
 
 const bcrypt = require("bcryptjs");
 
-const generateRandomString = () => {
-  return Math.random().toString(36).slice(2, 8);
-};
+const { userEmailLookup } = require('./helpers');
+const { generateRandomString } = require('./helpers');
+const { urlsForUser } = require('./helpers');
 
-const userEmailLookup = (email) => {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return null;
-}
-
-const urlsForUser = (id) => {
-  const ownedURLS = {};
-
-    for (const obj in urlDatabase) {
-      if (urlDatabase[obj].userID === id) {
-        ownedURLS[obj] = {
-          longURL: urlDatabase[obj].longURL,
-          userID: id,
-        }    
-      }
-    }
-  return ownedURLS;
-};
-  
 
 // ** ---------- Databases---------- ** //
-
 
 // Database of stored short URLS : Long URLS
 
@@ -57,6 +32,7 @@ const urlDatabase = {};
 // Database of users
 
 const users = {};
+
 
 // ** ------- Routes and Endpoints ------- ** //
 
@@ -71,7 +47,7 @@ app.post("/register", (req, res) => {
       res.status(400).send("Uh-oh! An empty email or password field was detected, please try again.");
       return;
    }
-  if (!userEmailLookup(req.body.email)) {
+  if (!userEmailLookup(req.body.email, users)) {
    const newUser = {
     id: randomID,
     email: req.body.email,
@@ -159,7 +135,7 @@ app.post("/urls/:shortID", (req, res) => {
 // If both match - resets the users specific cookie, redirects to /urls
 
 app.post("/login", (req, res) => {
-  const userObj = userEmailLookup(req.body.email);
+  const userObj = userEmailLookup(req.body.email, users);
 
   if (!userObj) {
     res.status(403).send("Email or password is incorrect.");
@@ -242,7 +218,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const cookieID = req.session.user_id;
-  const userURLS = urlsForUser(cookieID);
+  const userURLS = urlsForUser(cookieID, urlDatabase);
   const templateVars = { 
     user: users[cookieID],
     urls: userURLS };
@@ -254,7 +230,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
 
   const cookieID = req.session.user_id;
-  const userURLS = urlsForUser(cookieID);
+  const userURLS = urlsForUser(cookieID, urlDatabase);
   const shortID = req.params.id;
   const longID = urlDatabase[req.params.id].longURL
 
