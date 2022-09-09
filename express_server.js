@@ -11,26 +11,16 @@ app.use(morgan("dev"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true}));
 
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
-/*
 const cookieSession = require('cookie-session');
 app.use(cookieSession({
   name: 'session',
-  keys: [ //secret keys ],
-
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
-*/
+  secret: '7H1515453CR3T5TR1NG',
+}));
 
 const bcrypt = require("bcryptjs");
-// const hashPassword = bcrypt.hashSync(password, 8) -> to hash pass
-// bcrypt.compareSync(password, user.password) -> comparison matching purposes
 
 const generateRandomString = () => {
-  return Math.random().toString(36).slice(2, 8)
+  return Math.random().toString(36).slice(2, 8);
 };
 
 const userEmailLookup = (email) => {
@@ -54,7 +44,7 @@ const urlsForUser = (id) => {
       }
     }
   return ownedURLS;
-}
+};
   
 
 // ** ---------- Databases---------- ** //
@@ -92,7 +82,7 @@ app.post("/register", (req, res) => {
     res.status(400).send("Uh-oh! That email is already registered with us, please try again.");
     return;
   }
-  res.cookie("user_id", randomID);
+  req.session.user_id = (randomID);
   res.redirect("/urls");
 });
 
@@ -103,7 +93,7 @@ app.post("/register", (req, res) => {
 
 // ** //
 app.post("/urls", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const shortID = generateRandomString();
     if (cookieID) {
      urlDatabase[shortID] = { 
@@ -120,7 +110,7 @@ app.post("/urls", (req, res) => {
 // Deletes the requested keyed object from the URL database if user meets conditions, redirects back to url page.
 
 app.post("/urls/:shortID/delete", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const shortID = req.params.shortID;
     if (cookieID !== urlDatabase[shortID].userID) {
       res.status(403).send("You're not the owner of this URL");
@@ -141,7 +131,7 @@ app.post("/urls/:shortID/delete", (req, res) => {
 // Edits the longURL value held in the urlDatabase if user meets conditions 
 
 app.post("/urls/:shortID", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const shortID = req.params.shortID
     if (cookieID !== urlDatabase[shortID].userID) {
       res.status(403).send("You're not the owner of this URL");
@@ -176,7 +166,7 @@ app.post("/login", (req, res) => {
     return;
   };
   if (bcrypt.compareSync(req.body.password, userObj.password)) {
-    res.cookie("user_id", userObj.id);
+    req.session.user_id = userObj.id;
     res.redirect("/urls");
     return;
   }  else {
@@ -190,9 +180,9 @@ app.post("/login", (req, res) => {
 // Redirects back to the urls page
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null; 
   res.redirect("/urls");
-  //req.session = null; removes cookies?
+  
 });
 
 
@@ -212,7 +202,7 @@ app.get("/u/:id", (req, res) => {
 // If user is logged-in already, redirects to /urls.
 
 app.get("/login", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const templateVars = {user: users[cookieID],}
     if (cookieID) {
     res.redirect("/urls");
@@ -225,7 +215,7 @@ app.get("/login", (req, res) => {
 // If a user is currently logged-in, redirects to /urls.
 
 app.get("/register", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const templateVars = {user: users[cookieID],};
     if (cookieID) {
       res.redirect("/urls")
@@ -239,7 +229,7 @@ app.get("/register", (req, res) => {
 // If user is not logged in, redirects to login page.
 
 app.get("/urls/new", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const templateVars = {user: users[cookieID],}
     if (cookieID) {
       res.render("urls_new", templateVars);
@@ -251,7 +241,7 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls", (req, res) => {
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const userURLS = urlsForUser(cookieID);
   const templateVars = { 
     user: users[cookieID],
@@ -263,7 +253,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
 
-  const cookieID = req.cookies["user_id"];
+  const cookieID = req.session.user_id;
   const userURLS = urlsForUser(cookieID);
   const shortID = req.params.id;
   const longID = urlDatabase[req.params.id].longURL
@@ -293,11 +283,3 @@ app.get("/urls.json", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
-
-
-/*
- id: req.params.id, 
-    longURL: urlDatabase[req.params.id].longURL}
-    */
