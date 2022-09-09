@@ -107,7 +107,7 @@ app.post("/register", (req, res) => {
    const newUser = {
     id: randomID,
     email: req.body.email,
-    password: req.body.password,
+    password: bcrypt.hashSync(req.body.password, 10),
    }
    users[randomID] = newUser;
   } else {
