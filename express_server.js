@@ -62,33 +62,11 @@ const urlsForUser = (id) => {
 
 // Database of stored short URLS : Long URLS
 
-const urlDatabase = {
-  /*
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "aJ48lW"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "aJ48lW"
-  },*/
-};
+const urlDatabase = {};
 
 // Database of users
 
-const users = {
-
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+const users = {};
 
 // ** ------- Routes and Endpoints ------- ** //
 
@@ -132,7 +110,6 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: cookieID,
     };
-    console.log(urlDatabase);
     res.redirect(`/urls/${shortID}`);
   } else {
       res.status(403).send("Only registered users are able to access the shorten URL feature!");
@@ -197,15 +174,15 @@ app.post("/login", (req, res) => {
   if (!userObj) {
     res.status(403).send("Email or password is incorrect.");
     return;
-  }
-  if ((userObj) && (req.body.password !== userObj.password)) {
-    res.status(403).send("Email or password is incorrect.");
-    return;
-  } 
-  if ((userObj)  && (req.body.password === userObj.password)) {
+  };
+  if (bcrypt.compareSync(req.body.password, userObj.password)) {
     res.cookie("user_id", userObj.id);
     res.redirect("/urls");
-  }
+    return;
+  }  else {
+    res.status(403).send("Email or password is incorrect.");
+    return;
+  };
 });
 
 
